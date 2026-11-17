@@ -159,7 +159,7 @@ details a{color:#2a3fb0}
 <div class="line"><button class="go alt" id="again" type="button">CHANGE MY ANSWERS</button></div>
 </div>
 <div class="box" style="margin-top:18px">
-<h2>50 CITIES RANKED</h2>
+<h2>TOP 30 CITIES</h2>
 <p class="note" style="margin:0 0 10px" id="rownote"></p>
 <div class="rows" id="rows"></div>
 </div>
@@ -982,8 +982,8 @@ function report() {
   rows.slice(0, 3).forEach((r, i) => { const d = el('div', 'podc'); d.append(el('div', 'n', ['1ST', '2ND', '3RD'][i]), el('div', 'c', r.c.city), el('div', 's', String(Math.round(r.score))), el('div', '', money(r.kept) + (S.a.retire ? ' left and saved' : ' left'))); pod.append(d); });
   $('rownote').textContent = 'Score, money left over (incl. retirement)' + (home ? ', and difference from ' + home.c.city : '') + '. Tap a city to learn more.';
   const box = $('rows'); box.replaceChildren();
-  const SHOWN = 10, full = S.allRows || rows.length <= SHOWN;
-  for (const r of full ? rows : rows.slice(0, SHOWN)) {
+  const SHOWN = 10, MAXN = 30, full = S.allRows || rows.length <= SHOWN;
+  for (const r of rows.slice(0, full ? MAXN : SHOWN)) {
     const b = el('button', 'row'); b.type = 'button'; b.setAttribute('aria-pressed', String(r === sel));
     const cv = el('canvas'); cv.width = 14; cv.height = 9; cv.setAttribute('aria-hidden', 'true'); { const fc = ctxOf(cv); if (fc) drawFlag(fc, r.c.city, -1, 0, 1); }
     const nm = el('span', 'nm', r.c.city + (r.short ? ' · under goal' : '')), bar = el('span'), fill = el('i'); fill.style.width = Math.round(r.score) + '%'; bar.append(fill); nm.append(bar);
