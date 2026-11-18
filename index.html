@@ -233,7 +233,7 @@ details a{color:#2a3fb0}
 <li><b>Pro sports.</b> Teams playing within 30 miles of the city, with the major leagues (NFL, NBA, MLB, NHL, MLS) counting most, then the WNBA, NWSL and PWHL, then top minor leagues (Wikipedia's list of US pro teams, Nov 2026). It only matters if you want a lively neighborhood or a big city, and even then only a little.</li>
 <li><b>Jinxy's hunch.</b> My own read of each city's feel. It is a small part of the score.</li>
 <li><b>The score.</b> Each measure ranks the city among the 66, and your answers set how much each counts. Cities you can't afford lose points. What people search about a city nudges the score slightly.</li>
-<li><b>Counting.</b> The site counts visits with GoatCounter, which keeps no personal information. When you finish, it also counts your current city and your top 3 matches, and nothing else about your answers.</li>
+<li><b>Counting.</b> The site counts visits with GoatCounter, which keeps no personal information. When you finish, it also counts your current city and your top 25 matches, and nothing else about your answers.</li>
 <li><b>Rounding and edits.</b> Dollar amounts round to the nearest $100. Editing your current city's receipt changes that line in every city by the same proportion.</li>
 </ul>
 <h3>SOURCES</h3>
@@ -1023,10 +1023,11 @@ function answers() {
     const dd = el('dd'); dd.append(w); dl.append(el('dt', '', lab), dd);
   }
 }
-/* anonymous counts in GoatCounter: only the current city and the top 3 matches, sent once when someone finishes */
+/* anonymous counts in GoatCounter, sent once when someone finishes: the current city, the #1 match,
+   and one event with the whole top 25 in order as city codes (current city first), e.g. rank/PHL/MSN.CLE.BWI... */
 function sendStats(home, rows) {
-  const ev = [['home/' + (home || 'none'), 'Home city: ' + (home || 'none')], ['top1/' + rows[0].c.city, 'Top match: ' + rows[0].c.city]];
-  rows.slice(0, 3).forEach((r) => ev.push(['top3/' + r.c.city, 'In top 3: ' + r.c.city]));
+  const code = (c) => ABBR[c] || c, top = rows.slice(0, 25).map((r) => code(r.c.city)).join('.');
+  const ev = [['home/' + (home || 'none'), 'Home city: ' + (home || 'none')], ['top1/' + rows[0].c.city, 'Top match: ' + rows[0].c.city], ['rank/' + (home ? code(home) : 'none') + '/' + top, 'Top 25 from ' + (home || 'none')]];
   let tries = 0; const go = () => { const g = window.goatcounter;
     if (g && g.count) { try { ev.forEach(([path, title]) => g.count({path: path.replace(/ /g, '-'), title, event: true})); } catch (e) {} }
     else if (++tries < 20) setTimeout(go, 500); };
