@@ -243,7 +243,7 @@ details a{color:#2a3fb0}
 <li><b>Pro sports.</b> Teams playing within 30 miles of the city, with the major leagues (NFL, NBA, MLB, NHL, MLS) counting most, then the WNBA, NWSL and PWHL, then top minor leagues (Wikipedia's list of US pro teams, Nov 2026). It only matters if you want a lively neighborhood or a big city, and even then only a little.</li>
 <li><b>Jinxy's hunch.</b> My own read of each city's feel. It is a small part of the score.</li>
 <li><b>The score.</b> Each measure ranks the city among the 66, and your answers set how much each counts. Cities you can't afford lose points. What people search about a city nudges the score slightly.</li>
-<li><b>Counting.</b> The site counts visits with GoatCounter, which keeps no personal information. When you finish, it also counts your current city and your top 25 matches, and nothing else about your answers.</li>
+<li><b>Counting.</b> The site counts visits with GoatCounter, which keeps no personal information. When you finish, it also records your answers and top 25 matches as one anonymous code, with nothing that identifies you.</li>
 <li><b>Rounding and edits.</b> Dollar amounts round to the nearest $100. Editing your current city's receipt changes that line in every city by the same proportion.</li>
 </ul>
 <h3>SOURCES</h3>
@@ -1034,10 +1034,21 @@ function answers() {
   }
 }
 /* anonymous counts in GoatCounter, sent once when someone finishes: the current city, the #1 match,
-   and one event with the whole top 25 in order as city codes (current city first), e.g. rank/PHL/MSN.CLE.BWI... */
+   and one event with every answer and the top 25 in order, e.g. r/1.2.PHL.100.1.0.17.1.x.2.2.2.3.5.2.4.3.3.3.1/SEA.SFO.MSN...
+   Answer code, in question order: character number, then each answer's option number (1 = first option), except
+   current city (city code), salary and household income (in $1,000s, 0 if skipped) and industry (Census code); x = skipped. */
+function ansCode(a) {
+  return Q.map((q) => { const v = a[q.id];
+    if (q.skip && q.skip(a)) return 'x';
+    if (q.type === 'avatar') return String((v || 0) + 1);
+    if (q.type === 'home') return v ? ABBR[v] || v : 'none';
+    if (q.type === 'salary' || q.type === 'household') return String(Math.round((v || 0) / 1000));
+    if (q.type === 'industry') return String(v);
+    const k = (q.opts || []).findIndex((o) => o[0] === v); return k < 0 ? 'x' : String(k + 1); }).join('.');
+}
 function sendStats(home, rows) {
   const code = (c) => ABBR[c] || c, top = rows.slice(0, 25).map((r) => code(r.c.city)).join('.');
-  const ev = [['home/' + (home || 'none'), 'Home city: ' + (home || 'none')], ['top1/' + rows[0].c.city, 'Top match: ' + rows[0].c.city], ['rank/' + (home ? code(home) : 'none') + '/' + top, 'Top 25 from ' + (home || 'none')]];
+  const ev = [['home/' + (home || 'none'), 'Home city: ' + (home || 'none')], ['top1/' + rows[0].c.city, 'Top match: ' + rows[0].c.city], ['r/' + ansCode(S.a) + '/' + top, 'Answers and top 25']];
   let tries = 0; const go = () => { const g = window.goatcounter;
     if (g && g.count) { try { ev.forEach(([path, title]) => g.count({path: path.replace(/ /g, '-'), title, event: true})); } catch (e) {} }
     else if (++tries < 20) setTimeout(go, 500); };
