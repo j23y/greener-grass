@@ -62,6 +62,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 @media (min-width:700px){.avs{grid-template-columns:repeat(6,1fr)}}
 .av[aria-pressed="true"]{background:var(--gold)}
 .av:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.totop{display:inline-block;margin-top:12px;font-size:17px;color:var(--ink);text-decoration:underline}
 .paybox{margin-left:auto;text-align:right;max-width:260px}.paybox .note{margin:6px 0 0;font-size:15px}
 @media (max-width:560px){#report .line > .go,.paybox,.paybox .go{width:100%;margin-left:0;max-width:none}.paybox,.paybox .note{text-align:center}}
 .line{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
@@ -205,7 +206,7 @@ details a{color:#2a3fb0}
 <div class="box tabp" id="detail" role="tabpanel"></div>
 <div class="box tabp" id="hood" role="tabpanel"></div>
 <div class="box tabp" id="cost" role="tabpanel"></div>
-<details style="margin-top:18px" id="ansd"><summary>Your Answers</summary><button class="mini" id="restart" type="button" style="margin-top:10px">Start over</button><p class="rsub" style="margin:8px 0 0">You can edit responses below</p><dl class="ans" id="answers"></dl></details>
+<details style="margin-top:18px" id="ansd"><summary>Your Answers</summary><button class="mini" id="restart" type="button" style="margin-top:10px">Start over</button><p class="rsub" style="margin:8px 0 0">You can edit responses below</p><dl class="ans" id="answers"></dl><a href="#report" class="totop" id="totop">Back to top</a></details>
 </section>
 
 <details>
@@ -1006,7 +1007,8 @@ function receipt(d, r, home, edit) {
 const ALAB = {avatar: 'Character', age: 'Age', home: 'Current city', salary: 'Your salary', people: 'Household size', hh: 'Household income', job: 'Job if you move', industry: 'Industry', move: 'Getting around', owns: 'Own a car', space: 'Rent', eat: 'Eating and drinking out', culture: 'Museums, shows, etc.', green: 'Parks or storefronts', vibe: 'Neighborhood feel', weather: 'Weather', mix: 'Neighbors', pol: 'Politics', size: 'City size', retire: 'Retirement savings', money: 'Spending habits'};
 function answers() {
   const dl = $('answers'); dl.replaceChildren();
-  const set = (id, val) => { S.a[id] = val; S.ans[id] = true; if (id !== 'salary' && id !== 'hh') S.focus = 'ans_' + id; report(); };
+  /* no refocus after a change: on phones focusing the menu again reopens it */
+  const set = (id, val) => { S.a[id] = val; S.ans[id] = true; report(); };
   const choose = (id, list, cur, label) => { const s = el('select', 'aed'); s.id = 'ans_' + id; s.setAttribute('aria-label', label);
     list.forEach(([v, t], i) => { const o = el('option', '', t); o.value = i; if (v === cur) s.value = String(i); s.append(o); });
     const k = list.findIndex((x) => x[0] === cur); s.value = String(k < 0 ? 0 : k);
@@ -1237,6 +1239,7 @@ function start(saved) {
     if (!AGES[S.a.age]) S.a.age = '25'; if (![-2, -1, 0, 1, 2].includes(S.a.pol)) S.a.pol = 0; if (S.a.mix === 3) S.a.mix = 4; if (![1, 2, 3, 4, 5].includes(S.a.people)) S.a.people = (S.a.hh || 0) > S.a.salary ? 2 : 1; if (!['big', 'med', 'small'].includes(S.a.size)) S.a.size = 'med'; if (![1, 2, 3, 4].includes(S.a.culture)) S.a.culture = S.a.culture === 5 ? 4 : S.a.culture === 0 ? 1 : 2; if (![1, 2, 3, 4, 5].includes(S.a.vibe)) S.a.vibe = 3; if (S.a.home === 'Washington') S.a.home = 'Washington DC'; if (S.a.home && !BASE.some((c) => c.city === S.a.home)) S.a.home = null; }
   $('back').addEventListener('click', prev);
   $('again').addEventListener('click', () => { const d = $('ansd'); d.open = true; if (d.scrollIntoView) d.scrollIntoView({block: 'start'}); const f = d.querySelector('summary'); if (f) f.focus(); });
+  $('totop').addEventListener('click', (e) => { e.preventDefault(); const r = $('report'); if (r && r.scrollIntoView) r.scrollIntoView({block: 'start'}); const h = r && r.querySelector('h2'); if (h) { h.tabIndex = -1; h.focus({preventScroll: true}); } });
   $('restart').addEventListener('click', () => { S.done = false; S.step = 0; render(); const qz = $('quiz'); if (qz.scrollIntoView) qz.scrollIntoView({block: 'start'}); });
   /* switch between your current salary and what your industry pays in each city */
   $('paytog').addEventListener('click', () => { S.a.job = S.a.job === 'find' ? 'keep' : 'find'; S.focus = 'paytog'; report();
