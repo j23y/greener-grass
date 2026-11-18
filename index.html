@@ -192,7 +192,7 @@ details a{color:#2a3fb0}
 <h2>YOUR REPORT</h2>
 <div class="hero"><canvas id="heroc" width="120" height="54" aria-hidden="true"></canvas><p id="herot"></p></div>
 <div class="pod" id="pod"></div>
-<div class="line"><button class="go alt" id="again" type="button">CHANGE MY ANSWERS</button></div>
+<div class="line"><button class="go alt" id="again" type="button">CHANGE MY ANSWERS</button><button class="go alt" id="paytog" type="button" aria-pressed="false">USE ESTIMATED SALARY</button></div>
 </div>
 <div class="tabs" id="tabs" role="tablist" aria-label="Report sections"></div>
 <div class="box tabp" id="tab-rank" role="tabpanel">
@@ -203,7 +203,7 @@ details a{color:#2a3fb0}
 <div class="box tabp" id="detail" role="tabpanel"></div>
 <div class="box tabp" id="hood" role="tabpanel"></div>
 <div class="box tabp" id="cost" role="tabpanel"></div>
-<details style="margin-top:18px"><summary>Your Answers</summary><p class="rsub" style="margin:8px 0 0">You can edit responses below</p><dl class="ans" id="answers"></dl></details>
+<details style="margin-top:18px" id="ansd"><summary>Your Answers</summary><button class="mini" id="restart" type="button" style="margin-top:10px">Start over</button><p class="rsub" style="margin:8px 0 0">You can edit responses below</p><dl class="ans" id="answers"></dl></details>
 </section>
 
 <details>
@@ -219,7 +219,7 @@ details a{color:#2a3fb0}
 <ul>
 <li><b>The cities.</b> The 48 largest US cities, St. Louis and Tallahassee, plus 16 well-known smaller cities: Tampa, Orlando, New Orleans, Pittsburgh, Cincinnati, Cleveland, Salt Lake City, Honolulu, Richmond, Buffalo, Providence, Birmingham, Madison, Boise, Charleston and Durham. Honolulu is the Census Bureau's urban Honolulu area, not all of Oahu.</li>
 <li><b>Your neighborhood.</b> The census tracts where households your age and income cluster most. Rent, density, commuting, Walk Score and businesses are measured there; everything else is city-wide.</li>
-<li><b>Your pay.</b> Keeping your job keeps your salary. Finding a similar job scales it by what your industry pays in each metro.</li>
+<li><b>Your pay.</b> By default every city uses your current salary. Estimated salary instead scales it by what full-time workers in your industry earn (the median, from the Census Bureau's American Community Survey) in each metro compared with your current metro, or the nation if your city isn't on the list. The rest of your household's income moves with each metro's overall pay level.</li>
 <li><b>Rent.</b> Cheap, average and comfortable are the low, middle and high end of rents in your neighborhood, raised to reflect what newer renters pay. Today's asking rents can still be higher.</li>
 <li><b>Taxes.</b> 2026 federal, state and city income taxes for a single filer, plus each state's average sales tax.</li>
 <li><b>Retirement.</b> Your answer sets how much of what is left after expenses you save, up to the 2026 limits. It goes to a 401(k) first, then a traditional IRA, lowering your taxes. It counts as an expense in what you see, but cities are still ranked on retirement savings plus what is left over.</li>
@@ -229,7 +229,7 @@ details a{color:#2a3fb0}
 <li><b>Moving.</b> A one-time cost in the first year that grows with distance.</li>
 <li><b>Your city never goes below $0.</b> If your current city would come out negative, spending is trimmed until it doesn't, starting with fun stuff. Other cities get the same trims.</li>
 <li><b>Your kind of neighbors.</b> Rates how mixed each neighborhood and city is by race and ethnicity, income and age. All 66 cities are fairly mixed, so high, average and lower diversity are relative to each other.</li>
-<li><b>Your field.</b> How strong, big and fast-growing your industry is in each metro. It matters less if you keep your job.</li>
+<li><b>Your field.</b> How strong, big and fast-growing your industry is in each metro. It counts for more with estimated salary.</li>
 <li><b>Safety.</b> City-wide crime rates. Atlanta, Jacksonville, Tallahassee, New Orleans and Orlando use the closest available figures because the main FBI table skips them. Honolulu's police figures cover all of Oahu.</li>
 <li><b>Restaurants and culture.</b> Mostly how many are nearby per square mile, mixed with acclaim: 2026 James Beard Award semifinalists in the city and the metro's rank in the 2025 Arts Vibrancy Index. Acclaim counts more if you go out often or like big cities.</li>
 <li><b>Parks and nature.</b> A mix of city parks and nature within 50 miles of the city center. City parks are the share of residents within a 10-minute walk of a park and the share of land that is parkland, from ParkScore, or from TPL's ParkServe (the same measures) for cities ParkScore leaves out. Nature mixes how much land is public and open to visitors (national and state forests, parks, refuges, BLM land and more, from USGS PAD-US 4.1) with how much of the area is ocean or large lakes (Natural Earth). Small lakes and rivers aren't counted.</li>
@@ -371,7 +371,6 @@ const Q = [
   {id: 'salary', say: 'What do you earn in a year?', hint: 'Before tax.', type: 'salary'},
   {id: 'people', say: 'How many people are in your household?', opts: [[1, 'Just me', ''], [2, '2', ''], [3, '3', ''], [4, '4', ''], [5, '5 or more', '']]},
   {id: 'hh', say: 'What does your whole household earn in a year?', type: 'household', skip: (a) => (a.people || 1) <= 1},
-  {id: 'job', say: 'If you moved, what happens to your job?', opts: [['keep', 'I keep my job and my pay', ''], ['find', 'I would find a similar job there', '']]},
   {id: 'industry', say: 'What industry do you work in?', type: 'industry'},
   {id: 'move', say: 'Day to day, how do you want to get around?', opts: [['nocar', 'No car: walk, bike, transit, etc.'], ['foot', 'Prefer other ways, but car handy'], ['drive', 'Prefer driving'], ['wheels', 'I drive everywhere and I like it']]},
   {id: 'owns', say: 'Do you already own that car?', skip: (a) => a.move === 'nocar', opts: [['yes', 'Yes, I own one'], ['no', 'No, I would have to buy one']]},
@@ -979,7 +978,7 @@ function eline(box, label, key, val, cls, city) {
 }
 function receipt(d, r, home, edit) {
   const c = r.c, rc = el('div', 'rc'), C = c.city, E = (lab, key, val, cls) => edit ? eline(rc, lab, key, val, cls, C) : line(rc, lab, money(-val), cls);
-  line(rc, S.a.job === 'find' ? 'Expected salary here' : 'Salary', money(r.salary));
+  line(rc, S.a.job === 'find' ? 'Estimated salary here' : 'Salary', money(r.salary));
   if (r.addInc) line(rc, 'Additional household income', money(r.addInc));
   line(rc, 'Federal tax, Social Security, Medicare', money(-(r.t.fed + r.t.fica)));
   line(rc, 'State tax (' + c.st + ')', r.t.st ? money(-r.t.st) : 'none');
@@ -1041,6 +1040,7 @@ function sendStats(home, rows) {
   go();
 }
 function report() {
+  { const b = $('paytog'); if (b) { const est = S.a.job === 'find'; b.textContent = est ? 'USE MY CURRENT SALARY' : 'USE ESTIMATED SALARY'; b.setAttribute('aria-pressed', String(est)); } }
   drawScene();
   const rows = compute(), W = rows.W, home = S.a.home ? rows.find((r) => r.c.city === S.a.home) : null, top = rows[0];
   answers();
@@ -1049,7 +1049,7 @@ function report() {
   const dens = rows.map((r) => r.c.density).sort((p, q) => p - q), pd = (r) => 100 * dens.filter((x) => x < r.c.density).length / (dens.length - 1);
   hero.args = [$('heroc'), top, pd(top)]; heroDraw();
   const ht = $('herot'); ht.replaceChildren();
-  ht.append('Your best match is ', el('b', '', top.c.city), ', at ' + Math.round(top.score) + ' out of 100, ' + (S.a.job === 'find' ? 'on an expected salary of ' + money(top.salary) + ', with ' : 'with '), el('b', '', money(top.left)), ' a year left over' + (home && home !== top && Math.abs(top.retire - home.retire) >= 100 ? ', and ' + money(Math.abs(top.retire - home.retire)) + (top.retire > home.retire ? ' more' : ' less') + ' saved for retirement than in ' + home.c.city + '.' : '.'));
+  ht.append('Your best match is ', el('b', '', top.c.city), ', at ' + Math.round(top.score) + ' out of 100, ' + (S.a.job === 'find' ? 'on an estimated salary of ' + money(top.salary) + ', with ' : 'with '), el('b', '', money(top.left)), ' a year left over' + (home && home !== top && Math.abs(top.retire - home.retire) >= 100 ? ', and ' + money(Math.abs(top.retire - home.retire)) + (top.retire > home.retire ? ' more' : ' less') + ' saved for retirement than in ' + home.c.city + '.' : '.'));
   if (top.left < 0) ht.append(' That is a shortfall: this life costs more there than the salary covers.');
   if (home && home !== top) ht.append(' ' + home.c.city + ', where you are now, ranks ' + home.rank + ' of ' + rows.length + ' at ' + Math.round(home.score) + '.');
   if (home && home === top) ht.append(' That is where you already live.');
@@ -1234,7 +1234,10 @@ function start(saved) {
   if (saved && saved.a && typeof saved.step === 'number') { S = {a: Object.assign({}, DEF, saved.a), ans: saved.ans || {}, adj: saved.adjCity ? {} : (saved.adj || {}), mv: saved.mv || {}, rview: 'new', step: Math.min(Q.length - 1, Math.max(0, saved.step)), done: !!saved.done, sel: saved.sel || null};
     if (!AGES[S.a.age]) S.a.age = '25'; if (![-2, -1, 0, 1, 2].includes(S.a.pol)) S.a.pol = 0; if (S.a.mix === 3) S.a.mix = 4; if (![1, 2, 3, 4, 5].includes(S.a.people)) S.a.people = (S.a.hh || 0) > S.a.salary ? 2 : 1; if (!['big', 'med', 'small'].includes(S.a.size)) S.a.size = 'med'; if (![1, 2, 3, 4].includes(S.a.culture)) S.a.culture = S.a.culture === 5 ? 4 : S.a.culture === 0 ? 1 : 2; if (![1, 2, 3, 4, 5].includes(S.a.vibe)) S.a.vibe = 3; if (S.a.home === 'Washington') S.a.home = 'Washington DC'; if (S.a.home && !BASE.some((c) => c.city === S.a.home)) S.a.home = null; }
   $('back').addEventListener('click', prev);
-  $('again').addEventListener('click', () => { S.done = false; S.step = 1; render(); const qz = $('quiz'); if (qz.scrollIntoView) qz.scrollIntoView({block: 'start'}); });
+  $('again').addEventListener('click', () => { const d = $('ansd'); d.open = true; if (d.scrollIntoView) d.scrollIntoView({block: 'start'}); const f = d.querySelector('summary'); if (f) f.focus(); });
+  $('restart').addEventListener('click', () => { S.done = false; S.step = 0; render(); const qz = $('quiz'); if (qz.scrollIntoView) qz.scrollIntoView({block: 'start'}); });
+  /* switch between your current salary and what your industry pays in each city */
+  $('paytog').addEventListener('click', () => { S.a.job = S.a.job === 'find' ? 'keep' : 'find'; S.focus = 'paytog'; report(); });
   try { if (window.claude && window.claude.hot && window.claude.hot.snapshot) window.claude.hot.snapshot(() => S); } catch (e) {}
   avX = stationX(S.done ? Q.length : S.step);
   render();
