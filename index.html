@@ -1136,7 +1136,8 @@ function detail(r, home, W, rows) {
       const tb = el('table', 'card'), hr = el('tr'); hr.append(el('th', '', title), el('th', 'g', ABBR[c.city] || 'NEW'), el('th', 'g', ABBR[home.c.city] || 'NOW'));
       tb.append(hr);
       for (const x of its) { const tr = el('tr'), a = el('td', 'g'), b = el('td', 'g');
-        if (x.v !== null) a.append(grd(x.v)); if (x.h !== null) b.append(grd(x.h, true));
+        /* the higher grade in each row gets the full shade */
+        if (x.v !== null) a.append(grd(x.v, !up)); if (x.h !== null) b.append(grd(x.h, up));
         const lc = el('td', 's'); lc.append(el('b', up ? 'up' : 'down', up ? '▲ ' : '▼ '), x.lab); if (x.t) lc.append(el('small', up ? 'up' : 'down', x.t));
         tr.append(lc, a, b); tb.append(tr); }
       d.append(tb);
