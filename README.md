@@ -10,9 +10,11 @@ Greener Grass is a pixel-art game that compares 66 US cities for you. Answer abo
 
 ## What you get
 
-- **Top 30 cities for you**, each with a score out of 100, the money you'd have left over each year and how that compares with where you live now.
+- **Top 25 cities for you**, each with a score out of 100, the money you'd have left over each year and how that compares with where you live now.
+- **A city report card** comparing any city you tap with where you live now, with grades, factor health bars and Jinxy's hunch.
+- **A neighborhood report** with rings for Walk Score, transit and who lives there, plus density, rent and nearby places.
 - **A cost of living receipt** for your current city and any city you tap. It covers taxes, rent, transportation, groceries, health, eating out, moving costs and retirement savings. You can edit the lines for your current city, and the same change carries over to every other city.
-- **Why a city scored the way it did**: neighborhood fit, safety, parks, weather, walkability, restaurants and culture, schools, your industry, city size, diversity and politics.
+- **Why a city scored the way it did**: neighborhood fit, safety, parks and nearby nature, weather, walkability, restaurants and culture, schools, your industry, city size, diversity and politics.
 - **Your answers**, which you can edit in place to see how the rankings change.
 
 ## The cities
@@ -31,7 +33,7 @@ The full methodology and notes on known gaps are under **Notes** at the end of t
 
 ## Sources
 
-Main sources include the Census Bureau (ACS, PUMS, County Business Patterns), BEA Regional Price Parities, BLS QCEW, the Tax Foundation, the IRS, the FBI (via Wikipedia and OpenCrime), Trust for Public Land ParkScore and ParkServe, Walk Score, the Stanford Education Data Archive, HCCI, AAA, Insurance.com, the James Beard Foundation, SMU DataArts and 2024 county election results. The game's Notes list every source with links.
+Main sources include the Census Bureau (ACS, PUMS, County Business Patterns), BEA Regional Price Parities, BLS QCEW, the Tax Foundation, the IRS, the FBI (via Wikipedia and OpenCrime), Trust for Public Land ParkScore and ParkServe, USGS PAD-US, Natural Earth, Walk Score, the Stanford Education Data Archive, HCCI, AAA, Insurance.com, the James Beard Foundation, SMU DataArts and 2024 county election results. The game's Notes list every source with links.
 
 ## Caveats
 
