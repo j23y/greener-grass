@@ -47,6 +47,10 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 button{font:inherit;color:inherit;cursor:pointer}
 .opt{background:#fff;border:3px solid var(--ink);border-radius:6px;box-shadow:0 4px 0 var(--ink);padding:11px 12px;text-align:left;font-weight:600;font-size:19px;min-height:48px}
 .opt small{display:block;font-weight:400;color:var(--dim);font-size:16px}
+/* desktop: two columns of answers so every choice fits without scrolling */
+@media (min-width:700px){.opts:not(.sal){grid-template-columns:1fr 1fr}}
+/* short desktop screens: a slimmer banner so the question and every answer fit */
+@media (min-width:700px) and (max-height:820px){#scene{max-height:150px;object-fit:cover;object-position:50% 70%}.wrap{gap:12px;padding-top:12px}.say{min-height:0}.opts{margin-top:10px;gap:8px}.opt{min-height:44px;padding:8px 12px}}
 @media (hover:hover){body:not(.still) .opt:hover{background:#fff1b8}}
 .opt:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .opt[aria-pressed="true"]{background:var(--gold)}
@@ -54,6 +58,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .avs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
 .av{background:#fff;border:3px solid var(--ink);border-radius:6px;box-shadow:0 4px 0 var(--ink);padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--px);font-size:13px}
 .av canvas{width:60px;height:80px}
+@media (min-width:700px){.avs{grid-template-columns:repeat(6,1fr)}}
+@media (min-width:700px) and (max-height:680px){#scene{max-height:110px}}
 .av[aria-pressed="true"]{background:var(--gold)}
 .av:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .line{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
@@ -129,13 +135,14 @@ input.ed{width:7ch;min-height:0;font:inherit;font-size:inherit;color:inherit;pad
 .gfx{background:#fff;border:3px solid var(--ink);border-radius:6px;padding:10px 12px;margin:0 0 10px}
 .gfx .t{font-family:var(--px);font-size:13px;margin:0 0 6px}.gfx .big{font-family:var(--px);font-size:20px}
 .ppl{display:flex;flex-wrap:wrap;gap:2px;margin:6px 0 2px}.ppl canvas{width:11px;height:16px}
-.rent{position:relative;height:22px;background:linear-gradient(90deg,var(--mint),var(--gold),var(--pink));border:3px solid var(--ink);border-radius:4px;margin:18px 4px 22px}
-.rent b{position:absolute;top:-4px;width:4px;height:24px;background:var(--ink);transform:translateX(-2px)}
+.rent{position:relative;display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:24px;padding:2px;background:var(--ink);border-radius:2px;margin:20px 4px 22px}
+.rent i{display:block;box-shadow:inset 0 3px 0 rgba(255,255,255,.3),inset 0 -3px 0 rgba(0,0,0,.2)}
+.rent b{position:absolute;top:-6px;width:4px;height:36px;background:var(--ink);transform:translateX(-2px)}
 .rent b.me{width:8px;transform:translateX(-4px);background:var(--ink);box-shadow:0 0 0 2px #fff}
-.rent span{position:absolute;top:24px;font-size:14px;transform:translateX(-50%);white-space:nowrap}
+.rent span{position:absolute;top:32px;font-size:14px;transform:translateX(-50%);white-space:nowrap}
 .rent em{position:absolute;top:-22px;font-size:13px;font-style:normal;font-family:var(--px);transform:translateX(-50%);white-space:nowrap}
 .biz{display:grid;grid-template-columns:96px 1fr 44px;gap:4px 8px;align-items:center;font-size:16px}
-.biz .b{height:12px;background:var(--cream-2);border:2px solid var(--ink);border-radius:3px;overflow:hidden}.biz .b i{display:block;height:100%;background:var(--sky)}
+.hp.sm{height:16px}
 .biz .n{text-align:right;font-family:var(--px);font-size:13px}
 .fit{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:4px 10px;align-items:center;font-size:17px}
 .fit .d{grid-column:1/-1;color:var(--dim);font-size:15px;margin:-2px 0 6px}
@@ -1050,8 +1057,7 @@ function report() {
   rows.slice(0, 3).forEach((r, i) => { const d = el('div', 'podc'); d.append(el('div', 'n', ['1ST', '2ND', '3RD'][i]), el('div', 'c', r.c.city), el('div', 's', String(Math.round(r.score))), el('div', '', money(r.kept) + (S.a.retire ? ' left and saved' : ' left'))); pod.append(d); });
   $('rownote').textContent = 'Score, money left over (incl. retirement)' + (home ? ', and difference from ' + home.c.city : '') + '. Tap a city to learn more.';
   const box = $('rows'); box.replaceChildren();
-  const SHOWN = 10, MAXN = 25, full = S.allRows || rows.length <= SHOWN;
-  for (const r of rows.slice(0, full ? MAXN : SHOWN)) {
+  for (const r of rows.slice(0, 25)) {
     const b = el('button', 'row'); b.type = 'button'; b.setAttribute('aria-pressed', String(r === sel));
     const cv = el('canvas'); cv.width = 14; cv.height = 9; cv.setAttribute('aria-hidden', 'true'); { const fc = ctxOf(cv); if (fc) drawFlag(fc, r.c.city, -1, 0, 1); }
     const nm = el('span', 'nm', r.c.city + (r.short ? ' · under goal' : '')), bar = el('span'), fill = el('i'); fill.style.width = Math.round(r.score) + '%'; bar.append(fill); nm.append(bar);
@@ -1061,9 +1067,8 @@ function report() {
     b.addEventListener('click', () => { if (S.sel !== r.c.city) S.rview = 'new'; S.sel = r.c.city; S.tab = 'city'; report(); const t = $('tabs'); if (t.scrollIntoView) t.scrollIntoView({block: 'start'}); });
     box.append(b);
   }
-  if (rows.length > SHOWN) { const tg = el('button', 'go alt', full ? 'HIDE' : 'SHOW ALL'); tg.type = 'button'; tg.style.alignSelf = 'flex-start'; tg.style.marginTop = '8px';
-    tg.addEventListener('click', () => { S.allRows = !full; report(); if (full) { const h = box.parentNode; if (h && h.scrollIntoView) h.scrollIntoView({block: 'start'}); } }); box.append(tg); }
   _rmax = {}; for (const k of ['restaurants', 'bars', 'coffee', 'grocery', 'culture']) _rmax[k] = Math.max(...rows.map((x) => x.c[k] || 0));
+  _rvals = {peers_pct: rows.map((x) => x.c.peers_pct)};
   tabs(sel);
   detail(sel, home, W, rows); hood(sel); cost(sel, home);
   if (S.focus) { const f = $(S.focus); S.focus = null; if (f) f.focus(); }
@@ -1161,10 +1166,10 @@ function detail(r, home, W, rows) {
   const ch = el('div', 'chips'); (c.so.length ? c.so : ['nothing printable']).forEach((w) => ch.append(el('span', 'chip', w))); d.append(ch);
 }
 /* whoop-style ring drawn in chunky pixels: number on top, label in the middle; good stats fill green to red, neutral ones stay ink */
-function ring(v, lab, good, unit) {
+function ring(v, lab, good, unit, colorBy) {
   if (unit === undefined) unit = good ? '' : '%';
   const w = el('div', 'ring'), box = el('div', 'rc'), cv = el('canvas'), N = 36; cv.width = N; cv.height = N; cv.setAttribute('aria-hidden', 'true');
-  const x = ctxOf(cv), has = v !== null && v !== undefined, col = !has ? null : good ? (v >= 70 ? '#3cc65a' : v >= 50 ? '#ffcf4a' : '#e8452c') : '#1b1b2f';
+  const x = ctxOf(cv), has = v !== null && v !== undefined, cv2 = colorBy === undefined ? v : colorBy, col = !has ? null : good ? (colorBy !== undefined ? (cv2 >= 67 ? '#3cc65a' : cv2 >= 33 ? '#ffcf4a' : '#e8452c') : v >= 70 ? '#3cc65a' : v >= 50 ? '#ffcf4a' : '#e8452c') : '#1b1b2f';
   if (x) for (let yy = 0; yy < N; yy++) for (let xx = 0; xx < N; xx++) {
     const dx = xx + .5 - N / 2, dy = yy + .5 - N / 2, rr = Math.hypot(dx, dy); if (rr > 17 || rr < 12.5) continue;
     const fr = ((Math.atan2(dx, -dy) / (2 * Math.PI)) + 1) % 1;
@@ -1179,24 +1184,29 @@ function pplIcon(on) { const cv = el('canvas'); cv.width = 7; cv.height = 10; co
 function hood(r) {
   const c = r.c, d = $('hood'); d.replaceChildren(); chead(d, r);
   d.append(el('p', 'note', 'Where people ' + AGES[S.a.age] + ' earning ' + BUCKETS[bucketOf(hhOf(S.a))] + ' live most: ' + c.sqmi + ' sq mi across ' + c.n + ' census tracts.'));
+  d.append(el('h3', '', 'ZIPS TO START WITH'));
+  const ch = el('div', 'chips'); String(c.zips).split(', ').forEach((z) => ch.append(el('span', 'chip', z))); d.append(ch);
   d.append(el('h3', '', 'GETTING AROUND'));
   let g = el('div', 'rings'); g.append(ring(c.ws[0], 'Walk Score', true), ring(c.ws[1] || null, 'Transit Score', true), ring(c.ws[2] || null, 'Bike Score', true), ring(c.nocar, 'Car-free homes'), ring(c.transit, 'Ride transit'), ring(c.walkbike, 'Walk or bike')); d.append(g);
   d.append(el('h3', '', 'WHO LIVES THERE'));
-  g = el('div', 'rings'); g.append(ring(c.peers_pct, 'People like you'), ring(c.renter, 'Renters'), ring(c.wfh, 'Work from home'), ring(c.div, 'Diversity', false, '')); d.append(g);
+  g = el('div', 'rings');
+  /* neighbors: whichever you prefer gets green-to-red colors (by where it ranks among the cities); the other stays neutral */
+  const likeMix = (S.a.mix || 4) >= 4, rk = (k) => { const v = _rvals[k] || []; return v.length > 1 ? 100 * v.filter((x) => x < c[k]).length / (v.length - 1) : undefined; };
+  g.append(likeMix ? ring(c.peers_pct, 'People like you') : ring(c.peers_pct, 'People like you', true, '%', rk('peers_pct')), ring(c.renter, 'Renters'), ring(c.wfh, 'Work from home'), likeMix ? ring(c.div, 'Diversity', true, '', r.dvp) : ring(c.div, 'Diversity', false, '')); d.append(g);
   { const bx = el('div', 'gfx'), n = Math.max(1, Math.min(20, Math.round(c.density / 3000))); bx.append(el('div', 't', 'PEOPLE PER SQ MI'), el('div', 'big', c.density.toLocaleString('en-US')));
     const p = el('div', 'ppl'); for (let i = 0; i < 20; i++) p.append(pplIcon(i < n)); bx.append(p, el('div', 'note', 'Each person = 3,000 per sq mi')); d.append(bx); }
   if (c.r25 && c.r75) { const bx = el('div', 'gfx'), lo = c.r25 * .85, hi = c.r75 * 1.15, at = (v) => (100 * (v - lo) / (hi - lo)).toFixed(1) + '%', pick = {cheap: c.r25, avg: c.r50, comfy: c.r75}[S.a.space] || c.r50;
     bx.append(el('div', 't', 'RENT A MONTH'));
-    const rb = el('div', 'rent'); [['Cheap', c.r25], ['Average', c.r50], ['Comfy', c.r75]].forEach(([lab, v]) => { const m = el('b', v === pick ? 'me' : ''); m.style.left = at(v); const s1 = el('span', '', money(v)); s1.style.left = at(v); const e1 = el('em', '', lab); e1.style.left = at(v); rb.append(m, s1, e1); });
+    const rb = el('div', 'rent'), RC = ['#5fd6a8', '#7fd98c', '#a6dc6e', '#cfdd57', '#ffcf4a', '#ffb352', '#ff9a66', '#ff8a8a', '#ff7aa8', '#ff6f9c'];
+    RC.forEach((col) => { const i = el('i'); i.style.background = col; rb.append(i); });
+    [['Cheap', c.r25], ['Average', c.r50], ['Comfy', c.r75]].forEach(([lab, v]) => { const m = el('b', v === pick ? 'me' : ''); m.style.left = at(v); const s1 = el('span', '', money(v)); s1.style.left = at(v); const e1 = el('em', '', lab); e1.style.left = at(v); rb.append(m, s1, e1); });
     bx.append(rb); d.append(bx); }
   { const bx = el('div', 'gfx'); bx.append(el('div', 't', 'PLACES PER SQ MI'));
     const items = [['Restaurants', 'restaurants'], ['Bars', 'bars'], ['Coffee', 'coffee'], ['Groceries', 'grocery'], ['Culture', 'culture']], bz = el('div', 'biz');
-    for (const [lab, k] of items) { const mx = rowsMax(k)[0]; const b = el('span', 'b'), i = el('i'); i.style.width = (mx ? Math.round(100 * c[k] / mx) : 0) + '%'; b.append(i); bz.append(el('span', '', lab), b, el('span', 'n', String(c[k]))); }
+    for (const [lab, k] of items) { const mx = rowsMax(k)[0], n = mx && c[k] ? Math.max(1, Math.round(10 * c[k] / mx)) : 0, b = el('span', 'hp sm'); for (let j = 0; j < 10; j++) { const i = el('i'); if (j < n) i.style.background = '#7ad0ff'; b.append(i); } bz.append(el('span', '', lab), b, el('span', 'n', String(c[k]))); }
     bx.append(bz); d.append(bx); }
-  d.append(el('h3', '', 'ZIPS TO START WITH'));
-  const ch = el('div', 'chips'); String(c.zips).split(', ').forEach((z) => ch.append(el('span', 'chip', z))); d.append(ch);
 }
-let _rmax = {};
+let _rmax = {}, _rvals = {};
 const rowsMax = (k) => [_rmax[k] || 0];
 function cost(r, home) {
   const d = $('cost'); d.replaceChildren(); chead(d, r);
