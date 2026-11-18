@@ -226,7 +226,7 @@ details a{color:#2a3fb0}
 <li><b>Rent.</b> Cheap, average and comfortable are the low, middle and high end of rents in your neighborhood, raised to reflect what newer renters pay. Today's asking rents can still be higher.</li>
 <li><b>Taxes.</b> 2026 federal, state and city income taxes for a single filer, plus each state's average sales tax.</li>
 <li><b>Retirement.</b> Your answer sets how much of what is left after expenses you save, up to the 2026 limits. It goes to a 401(k) first, then a traditional IRA, lowering your taxes. It counts as an expense in what you see, but cities are still ranked on retirement savings plus what is left over.</li>
-<li><b>Transportation.</b> A car's cost is insurance, gas (a five-year average), upkeep, parking and, if needed, buying one. Going car-free costs part of that, less where many people live without a car, and nearly the full amount plus a penalty where almost no one does.</li>
+<li><b>Transportation.</b> A car's cost is insurance, gas (a five-year average), upkeep, parking and, if needed, buying one. Going car-free costs part of that, less where many people live without a car, and nearly the full amount plus a penalty where almost no one does. If you'd rather not drive but keep a car handy, cities where almost everyone drives get a smaller penalty.</li>
 <li><b>Essentials.</b> What a typical person living alone spends, not the average, adjusted for local prices, plus a small emergency savings cushion. For bigger households, rent and spending (but not car costs) grow with the square root of household size, a standard OECD scale. The thriftier your spending habits, the closer this moves to what thrifty people spend. Health costs follow each metro's HCCI spending index; Sacramento, Honolulu, Birmingham and Madison have none, so they use the national level.</li>
 <li><b>Fun stuff.</b> Restaurants and other outings, based on how often you go out and local prices. Each time out assumes about $20 of food (my own estimate) plus one drink at the national median price of $6.52, adjusted for local prices.</li>
 <li><b>Moving.</b> A one-time cost in the first year that grows with distance.</li>
@@ -238,7 +238,7 @@ details a{color:#2a3fb0}
 <li><b>Parks and nature.</b> A mix of city parks and nature within 50 miles of the city center. City parks are the share of residents within a 10-minute walk of a park and the share of land that is parkland, from ParkScore, or from TPL's ParkServe (the same measures) for cities ParkScore leaves out. Nature mixes how much land is public and open to visitors (national and state forests, parks, refuges, BLM land and more, from USGS PAD-US 4.1) with how much of the area is ocean or large lakes (Natural Earth). Small lakes and rivers aren't counted.</li>
 <li><b>Weather and walkability.</b> Weather uses average temperatures and sunshine. Walkability blends car-free households, walking and transit commuting, grocery stores and Walk Score. In a few added-city neighborhoods Walk Score only had a single-point score that was implausibly low for how dense they are (downtown Boise scored 0), so Walk Score is left out there.</li>
 <li><b>Schools.</b> Only counts for households of three or more, and counts more the bigger the household. Average 3rd to 8th grade test scores in the main public school district named for the city, 2009–2019, from the Stanford Education Data Archive. Some cities have several districts, and scores also reflect students' family backgrounds, not just the schools. Honolulu uses Hawaii's single statewide district.</li>
-<li><b>City size.</b> Compares the city's population and its metro's, from the Census Bureau (ACS 2020–2024). Your size answer also nudges how much restaurants, culture and things to do count, a little less for small, a little more for big. Neighborhood energy is scored separately, so a small city with a lively neighborhood can still rank well.</li>
+<li><b>City size.</b> Compares the city's population and its metro's, from the Census Bureau (ACS 2020–2024). Your size answer also nudges how much restaurants, culture and things to do count, a little less for small, a little more for big. Neighborhood energy is scored separately, so a small city with a lively neighborhood can still rank well. If you pick small or big, the very largest or smallest metros get pushed down.</li>
 <li><b>Politics.</b> Based on who won the city's county (all five boroughs for New York) in the 2024 presidential election, not the city itself. Cities that voted the other way lose a little if you lean and a lot if you are solid. No preference changes nothing.</li>
 <li><b>Pro sports.</b> Teams playing within 30 miles of the city, with the major leagues (NFL, NBA, MLB, NHL, MLS) counting most, then the WNBA, NWSL and PWHL, then top minor leagues (Wikipedia's list of US pro teams, Nov 2026). It only matters if you want a lively neighborhood or a big city, and even then only a little.</li>
 <li><b>Jinxy's hunch.</b> My own read of each city's feel. It is a small part of the score.</li>
@@ -545,11 +545,13 @@ function compute() {
     const rough = -1.5 * tags.filter((x) => x === 'rough').length, nice = tags.filter((x) => x === 'nice').length, words = Math.max(-2, Math.min(2, rough + nice));
     r.short = 0;
     r.deficit = !r.short && r.kept < 0 ? -r.kept : 0;
-    r.carPen = r.free ? 10 * Math.max(0, Math.min(1, (25 - c.nocar) / 15)) : 0;
+    /* guardrails against eyebrow-raising picks: car-dependent cities for car-free people, huge metros for small-city people and the reverse */
+    r.carPen = r.free ? 20 * Math.max(0, Math.min(1, (30 - c.nocar) / 20)) : a.move === 'foot' ? 8 * Math.max(0, Math.min(1, (20 - c.nocar) / 12)) : 0;
+    { const L = Math.log10(c.mpop); r.sizePen = SZ === 'small' ? 10 * Math.max(0, Math.min(1, (L - 6.4) / .38)) : SZ === 'big' ? 10 * Math.max(0, Math.min(1, (6.18 - L) / .4)) : 0; }
     const pen = r.short ? Math.min(30, 30 * r.short / a.save) : r.deficit ? Math.min(30, 30 * r.deficit / (.1 * r.salary)) : 0;
     r.career = CAR[i]; r.carPts = (CAR[i] - 50) / (a.job === 'find' ? 10 : 20);
     r.polPen = a.pol && Math.sign(c.pol) !== Math.sign(a.pol) ? POLPEN[Math.abs(a.pol)] : 0;
-    r.f = f; r.score = Math.max(0, Math.min(100, (w ? sum / w : 0) + words - pen - r.carPen + r.carPts - r.polPen));
+    r.f = f; r.score = Math.max(0, Math.min(100, (w ? sum / w : 0) + words - pen - r.carPen - r.sizePen + r.carPts - r.polPen));
   });
   rows.W = W;
   rows.sort((p, q) => q.score - p.score);
@@ -1047,7 +1049,7 @@ function ansCode(a) {
 }
 function sendStats(home, rows) {
   const code = (c) => ABBR[c] || c, top = rows.slice(0, 25).map((r) => code(r.c.city)).join('.');
-  const ev = [['home/' + (home || 'none'), 'Home city: ' + (home || 'none')], ['r/' + ansCode(S.a) + '/' + top, 'Answers and top 25']];
+  const ev = [['r/' + ansCode(S.a) + '/' + top, 'Answers and top 25']];
   let tries = 0; const go = () => { const g = window.goatcounter;
     if (g && g.count) { try { ev.forEach(([path, title]) => g.count({path: path.replace(/ /g, '-'), title, event: true})); } catch (e) {} }
     else if (++tries < 20) setTimeout(go, 500); };
