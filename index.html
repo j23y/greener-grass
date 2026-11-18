@@ -1239,7 +1239,9 @@ function start(saved) {
   $('again').addEventListener('click', () => { const d = $('ansd'); d.open = true; if (d.scrollIntoView) d.scrollIntoView({block: 'start'}); const f = d.querySelector('summary'); if (f) f.focus(); });
   $('restart').addEventListener('click', () => { S.done = false; S.step = 0; render(); const qz = $('quiz'); if (qz.scrollIntoView) qz.scrollIntoView({block: 'start'}); });
   /* switch between your current salary and what your industry pays in each city */
-  $('paytog').addEventListener('click', () => { S.a.job = S.a.job === 'find' ? 'keep' : 'find'; S.focus = 'paytog'; report(); });
+  $('paytog').addEventListener('click', () => { S.a.job = S.a.job === 'find' ? 'keep' : 'find'; S.focus = 'paytog'; report();
+    /* on phones the new rankings are above the button, so jump back to the top of the report */
+    if (window.matchMedia && window.matchMedia('(max-width:560px)').matches) { const r = $('report'); if (r && r.scrollIntoView) r.scrollIntoView({block: 'start'}); } });
   try { if (window.claude && window.claude.hot && window.claude.hot.snapshot) window.claude.hot.snapshot(() => S); } catch (e) {}
   avX = stationX(S.done ? Q.length : S.step);
   render();
