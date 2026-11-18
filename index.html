@@ -47,10 +47,11 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 button{font:inherit;color:inherit;cursor:pointer}
 .opt{background:#fff;border:3px solid var(--ink);border-radius:6px;box-shadow:0 4px 0 var(--ink);padding:11px 12px;text-align:left;font-weight:600;font-size:19px;min-height:48px}
 .opt small{display:block;font-weight:400;color:var(--dim);font-size:16px}
-/* desktop: two columns of answers so every choice fits without scrolling */
-@media (min-width:700px){.opts:not(.sal){grid-template-columns:1fr 1fr}}
+/* desktop: two columns of answers so every choice fits without scrolling, read down the first column then the second */
+@media (min-width:700px){.opts:not(.sal){grid-template-columns:1fr 1fr;grid-auto-flow:column;grid-template-rows:repeat(var(--rows,3),auto)}}
 /* short desktop screens: a slimmer banner so the question and every answer fit */
-@media (min-width:700px) and (max-height:820px){#scene{max-height:150px;object-fit:cover;object-position:50% 70%}.wrap{gap:12px;padding-top:12px}.say{min-height:0}.opts{margin-top:10px;gap:8px}.opt{min-height:44px;padding:8px 12px}}
+/* the banner shrinks only as much as the screen height needs */
+@media (min-width:700px) and (max-height:820px){#scene{max-height:max(110px,calc(100vh - 430px));object-fit:cover;object-position:50% 70%}.wrap{gap:12px;padding-top:12px}.say{min-height:0}.opts{margin-top:10px;gap:8px}.opt{min-height:44px;padding:8px 12px}}
 @media (hover:hover){body:not(.still) .opt:hover{background:#fff1b8}}
 .opt:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .opt[aria-pressed="true"]{background:var(--gold)}
@@ -59,9 +60,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .av{background:#fff;border:3px solid var(--ink);border-radius:6px;box-shadow:0 4px 0 var(--ink);padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--px);font-size:13px}
 .av canvas{width:60px;height:80px}
 @media (min-width:700px){.avs{grid-template-columns:repeat(6,1fr)}}
-@media (min-width:700px) and (max-height:680px){#scene{max-height:110px}}
 .av[aria-pressed="true"]{background:var(--gold)}
 .av:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.paybox{margin-left:auto;text-align:right;max-width:260px}.paybox .note{margin:6px 0 0;font-size:15px}
 .line{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
 input[type=number],input.num,select{font:inherit;font-size:20px;padding:9px 10px;border:3px solid var(--ink);border-radius:6px;background:#fff;color:var(--ink);min-height:48px}
 input[type=number],input.num{width:170px}
@@ -192,7 +193,7 @@ details a{color:#2a3fb0}
 <h2>YOUR REPORT</h2>
 <div class="hero"><canvas id="heroc" width="120" height="54" aria-hidden="true"></canvas><p id="herot"></p></div>
 <div class="pod" id="pod"></div>
-<div class="line"><button class="go alt" id="again" type="button">CHANGE MY ANSWERS</button><button class="go alt" id="paytog" type="button" aria-pressed="false">USE ESTIMATED SALARY</button></div>
+<div class="line" style="align-items:flex-start"><button class="go alt" id="again" type="button">CHANGE MY ANSWERS</button><div class="paybox"><button class="go alt" id="paytog" type="button" aria-pressed="false" aria-describedby="paynote">USE ESTIMATED SALARY*</button><p class="note" id="paynote"></p></div></div>
 </div>
 <div class="tabs" id="tabs" role="tablist" aria-label="Report sections"></div>
 <div class="box tabp" id="tab-rank" role="tabpanel">
@@ -978,7 +979,7 @@ function eline(box, label, key, val, cls, city) {
 }
 function receipt(d, r, home, edit) {
   const c = r.c, rc = el('div', 'rc'), C = c.city, E = (lab, key, val, cls) => edit ? eline(rc, lab, key, val, cls, C) : line(rc, lab, money(-val), cls);
-  line(rc, S.a.job === 'find' ? 'Estimated salary here' : 'Salary', money(r.salary));
+  line(rc, S.a.job === 'find' ? 'Estimated salary (similar job in ' + (ABBR[r.c.city] || r.c.city) + ')' : 'Salary', money(r.salary));
   if (r.addInc) line(rc, 'Additional household income', money(r.addInc));
   line(rc, 'Federal tax, Social Security, Medicare', money(-(r.t.fed + r.t.fica)));
   line(rc, 'State tax (' + c.st + ')', r.t.st ? money(-r.t.st) : 'none');
@@ -1040,7 +1041,7 @@ function sendStats(home, rows) {
   go();
 }
 function report() {
-  { const b = $('paytog'); if (b) { const est = S.a.job === 'find'; b.textContent = est ? 'USE MY CURRENT SALARY' : 'USE ESTIMATED SALARY'; b.setAttribute('aria-pressed', String(est)); } }
+  { const b = $('paytog'); if (b) { const est = S.a.job === 'find'; b.textContent = est ? 'USE MY CURRENT SALARY*' : 'USE ESTIMATED SALARY*'; $('paynote').textContent = est ? '*Showing pay for a similar job in each city.' : '*See each city with local pay for a similar job, instead of your current salary.'; b.setAttribute('aria-pressed', String(est)); } }
   drawScene();
   const rows = compute(), W = rows.W, home = S.a.home ? rows.find((r) => r.c.city === S.a.home) : null, top = rows[0];
   answers();
@@ -1228,7 +1229,7 @@ function render() {
   walkTo(S.step);
 }
 /* keep the banner in the same place on every question */
-function fitQuiz() { const qz = $('quiz'); if (!qz || qz.hidden) return; if ((window.scrollY || 0) !== 0) window.scrollTo(0, 0); }
+function fitQuiz() { const qz = $('quiz'); if (!qz || qz.hidden) return; qz.querySelectorAll('.opts').forEach((o) => o.style.setProperty('--rows', Math.ceil(o.children.length / 2))); if ((window.scrollY || 0) !== 0) window.scrollTo(0, 0); }
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!S.done) fitQuiz(); });
 function start(saved) {
   if (saved && saved.a && typeof saved.step === 'number') { S = {a: Object.assign({}, DEF, saved.a), ans: saved.ans || {}, adj: saved.adjCity ? {} : (saved.adj || {}), mv: saved.mv || {}, rview: 'new', step: Math.min(Q.length - 1, Math.max(0, saved.step)), done: !!saved.done, sel: saved.sel || null};
