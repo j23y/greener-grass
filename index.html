@@ -1039,7 +1039,7 @@ function sendStats(home, rows) {
   go();
 }
 function report() {
-  { const b = $('paytog'); if (b) { const est = S.a.job === 'find'; b.textContent = est ? 'USE MY CURRENT SALARY*' : 'USE ESTIMATED SALARY*'; $('paynote').textContent = est ? '*Showing pay for a similar job in each city.' : '*See each city with local pay for a similar job, instead of your current salary.'; b.setAttribute('aria-pressed', String(est)); } }
+  { const b = $('paytog'); if (b) { const est = S.a.job === 'find'; b.textContent = est ? 'USE MY CURRENT SALARY*' : 'USE ESTIMATED SALARY*'; $('paynote').textContent = est ? '*Showing pay for a similar job in each city.' : '*See each city with local pay for a similar job.'; b.setAttribute('aria-pressed', String(est)); } }
   drawScene();
   const rows = compute(), W = rows.W, home = S.a.home ? rows.find((r) => r.c.city === S.a.home) : null, top = rows[0];
   answers();
