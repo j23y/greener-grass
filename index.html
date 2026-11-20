@@ -357,7 +357,7 @@ const Q = [
   {id: 'people', say: 'How many people are in your household?', opts: [[1, 'Just me', ''], [2, '2', ''], [3, '3', ''], [4, '4', ''], [5, '5 or more', '']]},
   {id: 'hh', say: 'What does your whole household earn in a year?', type: 'household', skip: (a) => (a.people || 1) <= 1},
   {id: 'industry', say: 'What industry do you work in?', type: 'industry'},
-  {id: 'move', say: 'Day to day, how do you want to get around?', opts: [['nocar', 'No car: walk, bike, transit, etc.'], ['foot', 'Prefer other ways, but car handy'], ['drive', 'Prefer driving'], ['wheels', 'I drive everywhere and I like it']]},
+  {id: 'move', say: 'Ideally, day to day, how do you want to get around?', opts: [['nocar', 'No car: walk, bike, transit, etc.'], ['foot', 'Prefer other ways, but car handy'], ['drive', 'Prefer driving'], ['wheels', 'I drive everywhere and I like it']]},
   {id: 'owns', say: 'Do you already own that car?', skip: (a) => a.move === 'nocar', opts: [['yes', 'Yes, I own one'], ['no', 'No, I would have to buy one']]},
   {id: 'space', say: 'What kind of place do you want to rent?', opts: [['cheap', 'Cheap'], ['avg', 'Average'], ['comfy', 'Comfortable']]},
   {id: 'eat', say: 'How often do you go out to eat and drink?', opts: [[0, 'Almost never', ''], [1, 'A few times a month', ''], [2, 'A few times a week', ''], [3, 'Almost every day', '']]},
