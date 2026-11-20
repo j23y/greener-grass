@@ -906,7 +906,7 @@ function ask() {
     const ln = el('div', 'line'), lab = el('label', '', 'Or type it: '), inp = el('input'); numBox(inp); inp.className = 'num'; inp.id = 'sal'; lab.htmlFor = 'sal';
     if (S.ans.salary) inp.value = comma(S.a.salary);
     const go = el('button', 'go', 'NEXT'); go.type = 'button';
-    const ok = () => { const v = numVal(inp.value); if (isFinite(v) && v >= 1) pick('salary', Math.round(v)); else { $('hint').textContent = 'Type a yearly salary.'; inp.focus(); } };
+    const ok = () => { const v = numVal(inp.value); if (isFinite(v) && v >= 0) pick('salary', Math.round(v)); else { $('hint').textContent = 'Type a yearly salary.'; inp.focus(); } };
     go.addEventListener('click', ok); inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok(); });
     ln.append(lab, inp, go); body.append(o, ln);
   } else if (q.type === 'household') {
@@ -1010,7 +1010,7 @@ function answers() {
     if (q.type === 'avatar') w = choose('avatar', CHARS.map((c, i) => [i, c.n.charAt(0) + c.n.slice(1).toLowerCase()]), v, lab);
     else if (q.type === 'home') w = choose('home', [[null, 'Somewhere not on the list']].concat(BASE.map((c) => c.city).sort().map((c) => [c, c])), v || null, lab);
     else if (q.type === 'industry') w = choose('industry', INDUSTRY, v, lab);
-    else if (q.type === 'salary') w = typed('salary', money(v), lab, (n) => { if (!(n >= 1)) return null; const was = S.a.salary, solo = S.a.hh === was; S.a.hh = solo ? n : Math.max(S.a.hh || 0, n); set('salary', n); return n; });
+    else if (q.type === 'salary') w = typed('salary', money(v), lab, (n) => { if (!(n >= 0)) return null; const was = S.a.salary, solo = S.a.hh === was; S.a.hh = solo ? n : Math.max(S.a.hh || 0, n); set('salary', n); return n; });
     else if (q.type === 'household') w = typed('hh', v && v !== S.a.salary ? money(v) : 'Only my income', lab, (n) => { set('hh', Math.max(S.a.salary, n || 0)); return 0; });
     else if (q.opts) w = choose(q.id, q.opts.map((o) => [o[0], String(o[1]).replace(/^\d+\.\s*/, '')]), v, lab);
     if (!w) continue;
